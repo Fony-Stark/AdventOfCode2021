@@ -76,3 +76,67 @@ charles_part1(X):-
 	Gamma is Max - Epsilon,
 	X is Gamma * Epsilon.
 
+
+
+charles_part2(X):-
+	findall(Line, file_line("Day3Input.txt", Line), Lines),
+	oxygen_level(Oxygen, Lines),
+	co2_level(Co2, Lines),
+	X is Co2 * Oxygen.
+
+oxygen_level(Oxygen, Lines):-
+	el(Lines, 0, 0, Final_line),
+	string_to_list(Final_line, List),
+	sub_const(List, 48, List1),
+	write(Final_line), nl,
+	list_to_Eps(Oxygen, 0, 0, List1).
+
+co2_level(Co2, Lines):-
+	el(Lines, 0, 1, Final_line),
+	string_to_list(Final_line, List),
+	sub_const(List, 48, List1),
+	write(Final_line), nl,
+	list_to_Eps(Co2, 0, 0, List1).
+
+el([Line], _, _, Line).
+el(Lines, Index, Direction, Line):-
+	Lines = [LLine | _],
+	string_to_list(LLine, Xs),
+	length(Xs, LL),
+
+	length(Lines, Length),
+	Thresshold is Length / 2,
+
+	count(Lines, LL, Counter),
+	find_goals(Counter, Direction, Thresshold, Goals),
+	nth0(Index, Goals, Goal),
+
+	find_fits(Lines, Index, Goal, Fits),
+	
+	Index2 is Index + 1,
+	el(Fits, Index2, Direction, Line).
+
+find_goals([], _, _, []).
+find_goals([C | Cs], D, Thresshold, [G | Gs]):-
+	D =:= 0,
+	C >= Thresshold,
+	G is 1,
+	find_goals(Cs, D, Thresshold, Gs).
+find_goals([C | Cs], D, Thresshold, [G | Gs]):-
+	D =:= 1,
+	C < Thresshold,
+	G is 1,
+	find_goals(Cs, D, Thresshold, Gs).
+find_goals([_ | Cs], D, Thresshold, [G | Gs]):-
+	G is 0,
+	find_goals(Cs, D, Thresshold, Gs).
+
+find_fits([], _, _, []).
+find_fits([Line | Lines], Index, Goal, [Fit | Fits]):-
+	string_list(Line, List),
+	nth0(Index, List, Element),
+	Element =:= Goal,
+	Fit = Line,
+	find_fits(Lines, Index, Goal, Fits).
+find_fits([_ | Lines], Index, Goal, Fits):-
+	find_fits(Lines, Index, Goal, Fits).
